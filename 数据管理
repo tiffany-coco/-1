@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>情绪训练 - 教师管理与数据分析系统</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #5b8fb9;
+            --secondary: #4a7ba6;
+            --accent1: #ff9e4a;
+            --accent2: #6bbf8a;
+            --accent3: #d45069;
+            --accent4: #9d5ba1;
+            --light: #f5f7fa;
+            --dark: #2c3e50;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        
+        .student-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .student-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 4px solid var(--primary);
+        }
+        
+        .student-item:hover {
+            background-color: #e9ecef;
+            transform: translateX(5px);
+        }
+        
+        .student-item.active {
+            background-color: #e3f2fd;
+            border-left-color: var(--accent1);
+        }
+        
+        .student-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .student-info {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .card-1 { border-top: 4px solid var(--accent1); }
+        .card-2 { border-top: 4px solid var(--accent2); }
+        .card-3 { border-top: 4px solid var(--accent3); }
+        .card-4 { border-top: 4px solid var(--accent4); }
+        
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .chart-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        
+        .chart-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+            text-align: center;
+        }
+        
+        .dimensions-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .dimension-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        
+        .dimension-title {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dimension-icon {
+            font-size: 1.5rem;
+        }
+        
+        .progress-container {
+            margin-top: 15px;
+        }
+        
+        .progress-item {
+            margin-bottom: 15px;
+        }
+        
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.5s ease;
+        }
+        
+        .recent-activity {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        
+        .activity-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .activity-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        
+        .report-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #e0e0e0;
+            color: var(--dark);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 1200px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-cards {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .dimensions-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>情绪训练 - 教师管理与数据分析系统</h1>
+            <p class="subtitle">跟踪学生情绪识别训练进度，提供个性化教育评估</p>
+        </header>
+        
+        <div class="dashboard">
+            <div class="sidebar">
+                <h2 style="margin-bottom: 15px;">学生列表</h2>
+                <div class="student-list" id="studentList">
+                    <!-- 学生列表将通过JavaScript动态生成 -->
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <div class="stats-cards">
+                    <div class="stat-card card-1">
+                        <div class="stat-label">情绪识别能力</div>
+                        <div class="stat-value" id="recognitionScore">78%</div>
+                        <div class="stat-label">较上月 +5%</div>
+                    </div>
+                    <div class="stat-card card-2">
+                        <div class="stat-label">情绪理解能力</div>
+                        <div class="stat-value" id="understandingScore">65%</div>
+                        <div class="stat-label">较上月 +8%</div>
+                    </div>
+                    <div class="stat-card card-3">
+                        <div class="stat-label">情绪调节能力</div>
+                        <div class="stat-value" id="regulationScore">72%</div>
+                        <div class="stat-label">较上月 +3%</div>
+                    </div>
+                    <div class="stat-card card-4">
+                        <div class="stat-label">情绪表达能力</div>
+                        <div class="stat-value" id="expressionScore">60%</div>
+                        <div class="stat-label">较上月 +7%</div>
+                    </div>
+                </div>
+                
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <div class="chart-title">情绪成长曲线</div>
+                        <canvas id="growthChart"></canvas>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-title">阶段完成度统计</div>
+                        <canvas id="completionChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="dimensions-container">
+                    <div class="dimension-card">
+                        <div class="dimension-title">
+                            <span class="dimension-icon">🎯</span>
+                            <span>识别维度进展</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>基础情绪识别</span>
+                                    <span>85%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 85%; background-color: var(--accent1);"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>复杂情绪识别</span>
+                                    <span>65%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 65%; background-color: var(--accent1);"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>情绪强度识别</span>
+                                    <span>70%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 70%; background-color: var(--accent1);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dimension-card">
+                        <div class="dimension-title">
+                            <span class="dimension-icon">📚</span>
+                            <span>理解维度进展</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>情境情绪匹配</span>
+                                    <span>75%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 75%; background-color: var(--accent2);"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>情绪原因推测</span>
+                                    <span>60%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 60%; background-color: var(--accent2);"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>情绪后果预测</span>
+                                    <span>55%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 55%; background-color: var(--accent2);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dimension-card">
+                        <div class="dimension-title">
+                            <span class="dimension-icon">🔄</span>
+                            <span>调节维度进展</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>自我情绪调节</span>
+                                    <span>70%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 70%; background-color: var(--accent3);"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>情绪表达控制</span>
+                                    <span>65%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 65%; background-color: var(--accent3);"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>压力应对策略</span>
+                                    <span>60%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 60%; background-color: var(--accent3);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dimension-card">
+                        <div class="dimension-title">
+                            <span class="dimension-icon">💬</span>
+                            <span>表达维度进展</span>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>情绪词汇使用</span>
+                                    <span>65%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 65%; background-color: var(--accent4);"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>非语言表达</span>
+                                    <span>55%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 55%; background-color: var(--accent4);"></div>
+                                </div>
+                            </div>
+                            <div class="progress-item">
+                                <div class="progress-label">
+                                    <span>情绪需求表达</span>
+                                    <span>50%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 50%; background-color: var(--accent4);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="recent-activity">
+                    <h2 style="margin-bottom: 15px;">最近活动</h2>
+                    <div class="activity-list" id="activityList">
+                        <!-- 活动列表将通过JavaScript动态生成 -->
+                    </div>
+                    
+                    <div class="report-actions">
+                        <button class="btn btn-primary" id="generateReport">生成详细报告</button>
+                        <button class="btn btn-secondary" id="exportData">导出数据</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>情绪训练教师管理系统 &copy; 2023 - 专为孤独症儿童教育设计</p>
+            <p>数据可视化与分析工具 - 注意：本系统使用模拟数据，实际使用时需连接真实数据源</p>
+        </footer>
+    </div>
+
+    <script>
+        // 模拟学生数据
+        const students = [
+            {
+                id: 1,
+                name: "小明",
+                age: 8,
+                class: "三年级二班",
+                recognition: 78,
+                understanding: 65,
+                regulation: 72,
+                expression: 60,
+                joinDate: "2023-01-15",
+                progress: [30, 45, 55, 60, 65, 70, 78],
+                stages: [90, 75, 60, 40],
+                activities: [
+                    { type: "game", title: "完成了情绪模仿游戏", time: "2小时前", score: 85 },
+                    { type: "test", title: "完成了情绪识别测试", time: "1天前", score: 78 },
+                    { type: "game", title: "参与了情境配对游戏", time: "2天前", score: 70 },
+                    { type: "progress", title: "情绪调节能力提升", time: "3天前", score: 5 }
+                ]
+            },
+            {
+                id: 2,
+                name: "小红",
+                age: 9,
+                class: "四年级一班",
+                recognition: 85,
+                understanding: 70,
+                regulation: 65,
+                expression: 75,
+                joinDate: "2022-11-20",
+                progress: [40, 50, 60, 65, 70, 75, 80, 85],
+                stages: [95, 80, 70, 60],
+                activities: [
+                    { type: "game", title: "完成了表情拼图游戏", time: "3小时前", score: 90 },
+                    { type: "test", title: "完成了情绪理解测试", time: "1天前", score: 82 },
+                    { type: "game", title: "参与了情绪强度排序", time: "2天前", score: 75 },
+                    { type: "progress", title: "情绪表达能力提升", time: "4天前", score: 8 }
+                ]
+            },
+            {
+                id: 3,
+                name: "小华",
+                age: 7,
+                class: "二年级三班",
+                recognition: 65,
+                understanding: 55,
+                regulation: 60,
+                expression: 50,
+                joinDate: "2023-03-10",
+                progress: [20, 30, 40, 50, 55, 60, 65],
+                stages: [70, 60, 45, 30],
+                activities: [
+                    { type: "game", title: "完成了情绪选择游戏", time: "5小时前", score: 70 },
+                    { type: "test", title: "完成了基础情绪测试", time: "2天前", score: 65 },
+                    { type: "game", title: "参与了情绪模仿游戏", time: "3天前", score: 60 },
+                    { type: "progress", title: "情绪识别能力提升", time: "5天前", score: 10 }
+                ]
+            },
+            {
+                id: 4,
+                name: "小丽",
+                age: 8,
+                class: "三年级一班",
+                recognition: 80,
+                understanding: 75,
+                regulation: 70,
+                expression: 65,
+                joinDate: "2022-12-05",
+                progress: [35, 45, 55, 60, 65, 70, 75, 80],
+                stages: [85, 80, 65, 55],
+                activities: [
+                    { type: "game", title: "完成了共情理解游戏", time: "4小时前", score: 80 },
+                    { type: "test", title: "完成了情绪调节测试", time: "1天前", score: 75 },
+                    { type: "game", title: "参与了社会情境决策", time: "3天前", score: 70 },
+                    { type: "progress", title: "情绪理解能力提升", time: "6天前", score: 7 }
+                ]
+            }
+        ];
+
+        // 当前选中的学生
+        let currentStudent = students[0];
+
+        // 初始化学生列表
+        function initStudentList() {
+            const studentList = document.getElementById('studentList');
+            studentList.innerHTML = '';
+            
+            students.forEach(student => {
+                const studentItem = document.createElement('div');
+                studentItem.className = `student-item ${student.id === currentStudent.id ? 'active' : ''}`;
+                studentItem.innerHTML = `
+                    <div class="student-name">${student.name}</div>
+                    <div class="student-info">${student.age}岁 | ${student.class}</div>
+                    <div class="student-info">加入时间: ${student.joinDate}</div>
+                `;
+                
+                studentItem.addEventListener('click', () => {
+                    // 移除所有active类
+                    document.querySelectorAll('.student-item').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    
+                    // 添加active类到当前项
+                    studentItem.classList.add('active');
+                    
+                    // 更新当前学生
+                    currentStudent = student;
+                    
+                    // 更新仪表盘
+                    updateDashboard();
+                });
+                
+                studentList.appendChild(studentItem);
+            });
+        }
+
+        // 初始化活动列表
+        function initActivityList() {
+            const activityList = document.getElementById('activityList');
+            activityList.innerHTML = '';
+            
+            currentStudent.activities.forEach(activity => {
+                const activityItem = document.createElement('div');
+                activityItem.className = 'activity-item';
+                
+                // 根据活动类型设置图标和颜色
+                let icon = '📊';
+                let color = '#5b8fb9';
+                
+                if (activity.type === 'game') {
+                    icon = '🎮';
+                    color = '#6bbf8a';
+                } else if (activity.type === 'test') {
+                    icon = '📝';
+                    color = '#ff9e4a';
+                } else if (activity.type === 'progress') {
+                    icon = '📈';
+                    color = '#d45069';
+                }
+                
+                activityItem.innerHTML = `
+                    <div class="activity-icon" style="background-color: ${color};">${icon}</div>
+                    <div class="activity-content">
+                        <div class="activity-title">${activity.title}</div>
+                        <div class="activity-time">${activity.time} ${activity.score ? `| 得分: ${activity.score}%` : `| 提升: +${activity.score}%`}</div>
+                    </div>
+                `;
+                
+                activityList.appendChild(activityItem);
+            });
+        }
+
+        // 更新仪表盘数据
+        function updateDashboard() {
+            // 更新统计卡片
+            document.getElementById('recognitionScore').textContent = `${currentStudent.recognition}%`;
+            document.getElementById('understandingScore').textContent = `${currentStudent.understanding}%`;
+            document.getElementById('regulationScore').textContent = `${currentStudent.regulation}%`;
+            document.getElementById('expressionScore').textContent = `${currentStudent.expression}%`;
+            
+            // 更新图表
+            updateCharts();
+            
+            // 更新活动列表
+            initActivityList();
+        }
+
+        // 更新图表
+        function updateCharts() {
+            // 情绪成长曲线
+            const growthCtx = document.getElementById('growthChart').getContext('2d');
+            
+            // 如果已存在图表实例，则销毁它
+            if (window.growthChart) {
+                window.growthChart.destroy();
+            }
+            
+            window.growthChart = new Chart(growthCtx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月'],
+                    datasets: [
+                        {
+                            label: '情绪识别',
+                            data: currentStudent.progress,
+                            borderColor: '#ff9e4a',
+                            backgroundColor: 'rgba(255, 158, 74, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        },
+                        {
+                            label: '班级平均',
+                            data: [45, 50, 55, 60, 65, 68, 72, 75],
+                            borderColor: '#5b8fb9',
+                            borderDash: [5, 5],
+                            backgroundColor: 'transparent',
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: false
+                        },
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 阶段完成度统计
+            const completionCtx = document.getElementById('completionChart').getContext('2d');
+            
+            // 如果已存在图表实例，则销毁它
+            if (window.completionChart) {
+                window.completionChart.destroy();
+            }
+            
+            window.completionChart = new Chart(completionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['基础感知', '情境理解', '社会认知', '综合应用'],
+                    datasets: [
+                        {
+                            label: '完成度',
+                            data: currentStudent.stages,
+                            backgroundColor: [
+                                'rgba(255, 158, 74, 0.7)',
+                                'rgba(107, 191, 138, 0.7)',
+                                'rgba(212, 80, 105, 0.7)',
+                                'rgba(157, 91, 161, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgb(255, 158, 74)',
+                                'rgb(107, 191, 138)',
+                                'rgb(212, 80, 105)',
+                                'rgb(157, 91, 161)'
+                            ],
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 初始化
+        function init() {
+            initStudentList();
+            updateDashboard();
+            
+            // 添加按钮事件
+            document.getElementById('generateReport').addEventListener('click', function() {
+                alert(`正在为 ${currentStudent.name} 生成详细报告...\n报告包含四个维度的详细分析和建议。`);
+            });
+            
+            document.getElementById('exportData').addEventListener('click', function() {
+                alert(`正在导出 ${currentStudent.name} 的学习数据...\n数据将保存为CSV格式。`);
+            });
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
