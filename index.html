@@ -3,72 +3,72 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>生活语文期末测评——教师调查图表</title>
-  <!-- Chart.js CDN -->
+  <title>生活语文——学生语言能力成长图</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, "Noto Sans CJK SC", sans-serif; margin: 24px; }
-    h1 { font-size: 20px; margin: 0 0 8px; }
-    h2 { font-size: 18px; margin: 28px 0 8px; }
-    p { color: #333; margin: 6px 0 14px; }
-    .card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; margin-bottom: 22px; }
-    .row { display: grid; grid-template-columns: 1fr; gap: 22px; }
-    @media (min-width: 900px) { .row { grid-template-columns: 1fr 1fr; } }
-    .foot { color: #666; font-size: 12px; margin-top: 6px; }
-    canvas { width: 100%; height: 380px; }
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",Arial,sans-serif;margin:24px}
+    h1{font-size:20px;margin:0 0 8px}
+    h2{font-size:18px;margin:28px 0 10px}
+    p{color:#333;margin:6px 0 14px}
+    .grid{display:grid;grid-template-columns:1fr;gap:24px}
+    @media (min-width: 980px){.grid{grid-template-columns:1fr 1fr}}
+    .card{border:1px solid #e5e7eb;border-radius:12px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+    .foot{color:#666;font-size:12px}
+    canvas{width:100%;height:380px}
   </style>
 </head>
 <body>
-  <h1>生活语文期末测评——教师调查图表</h1>
-  <p class="foot">示例数据：N=20位生活语文任课教师（可在源码中修改）。</p>
+  <h1>学生语言能力成长图（示意）</h1>
+  <p class="foot">示例数据：五大领域（倾听与说话、识字与写字、阅读、写话与习作、综合性学习）在学期<span>期初→期中→期末</span>的变化与提升率。可在源码中修改。</p>
 
-  <div class="row">
-    <!-- 图1：任务类型占比对比 -->
+  <div class="grid">
+    <!-- 图A：成长曲线（折线图） -->
     <div class="card">
-      <h2>图1 现行测评占比 vs 教师期望占比（任务类型）</h2>
-      <p>横轴：任务类型；纵轴：占比（%）。对比“现行测评结构”与“教师期望结构”。</p>
-      <canvas id="barChart" aria-label="任务类型占比对比图" role="img"></canvas>
-      <div class="foot">现行占比（示例）：识记60｜理解20｜应用15｜综合5；期望占比（示例）：识记30｜理解25｜应用30｜综合15。</div>
+      <h2>图A 学生语言能力成长曲线（期初—期中—期末）</h2>
+      <canvas id="lineChart" aria-label="学生语言能力成长曲线" role="img"></canvas>
+      <div class="foot">纵轴：能力得分（%）；横轴：时间点。五条线分别对应五个领域。</div>
     </div>
 
-    <!-- 图2：教师感知（是否能反映生活语言应用能力） -->
+    <!-- 图B：提升率（柱状图） -->
     <div class="card">
-      <h2>图2 现有测评能否反映“生活语言应用能力”（教师感知）</h2>
-      <p>5级选项：非常能 / 比较能 / 一般 / 较弱 / 完全不能。</p>
-      <canvas id="pieChart" aria-label="教师感知饼图" role="img"></canvas>
-      <div class="foot">示例分布：非常能5%｜比较能20%｜一般10%｜较弱40%｜完全不能25%。</div>
+      <h2>图B 五大领域期末相对期初的提升率</h2>
+      <canvas id="barChart" aria-label="五大领域提升率柱状图" role="img"></canvas>
+      <div class="foot">示例提升率：倾听与说话12%、识字与写字10%、阅读14%、写话与习作9%、综合性学习13%。</div>
     </div>
   </div>
 
   <script>
-    // ====== 可编辑数据（直接改数值即可） ======
-    // 图1：任务类型占比（百分比）
-    const labelsTypes = ['识记类', '理解类', '应用类（情境）', '综合类（跨情境）'];
-    const currentRatio = [60, 20, 15, 5];   // 现行测评占比
-    const expectedRatio = [30, 25, 30, 15]; // 教师期望占比
+    // ========== 可编辑数据 ==========
+    // 领域标签（可改）
+    const dims = ['倾听与说话','识字与写字','阅读','写话与习作','综合性学习'];
 
-    // 图2：教师感知（百分比，总和100）
-    const perceptionLabels = ['非常能', '比较能', '一般', '较弱', '完全不能'];
-    const perceptionData = [5, 20, 10, 40, 25];
+    // 期初/期中/期末的示例得分（0-100）。可按你校实际替换。
+    const baseline = [60, 62, 58, 55, 59];  // 期初
+    const midterm  = [68, 70, 67, 63, 68];  // 期中
+    const final    = [72, 72, 72, 64, 72];  // 期末（示例做了平滑）
 
-    // ====== 图1：柱状对比图 ======
-    const barCtx = document.getElementById('barChart');
-    new Chart(barCtx, {
-      type: 'bar',
+    // 提升率（期末相对期初），可直接覆盖为真实百分比
+    const growthPct = [
+      12,  // 倾听与说话
+      10,  // 识字与写字
+      14,  // 阅读
+      9,   // 写话与习作
+      13   // 综合性学习
+    ];
+
+    // ========== 图A：成长曲线 ==========
+    const lineCtx = document.getElementById('lineChart');
+    new Chart(lineCtx, {
+      type: 'line',
       data: {
-        labels: labelsTypes,
-        datasets: [
-          {
-            label: '现行测评占比',
-            data: currentRatio,
-            borderWidth: 1
-          },
-          {
-            label: '教师期望占比',
-            data: expectedRatio,
-            borderWidth: 1
-          }
-        ]
+        labels: ['期初','期中','期末'],
+        datasets: dims.map((name, i) => ({
+          label: name,
+          data: [baseline[i], midterm[i], final[i]],
+          borderWidth: 2,
+          tension: 0.25,
+          pointRadius: 3
+        }))
       },
       options: {
         responsive: true,
@@ -77,38 +77,36 @@
           legend: { position: 'top' },
           tooltip: { callbacks: {
             label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y}%`
-          }},
-          title: { display: false }
+          }}
         },
         scales: {
-          y: {
-            beginAtZero: true,
-            max: 100,
-            ticks: { callback: (v) => v + '%' }
-          }
+          y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } }
         }
       }
     });
 
-    // ====== 图2：饼图 ======
-    const pieCtx = document.getElementById('pieChart');
-    new Chart(pieCtx, {
-      type: 'pie',
+    // ========== 图B：提升率柱状图 ==========
+    const barCtx = document.getElementById('barChart');
+    new Chart(barCtx, {
+      type: 'bar',
       data: {
-        labels: perceptionLabels,
+        labels: dims,
         datasets: [{
-          data: perceptionData,
+          label: '期末相对期初提升率',
+          data: growthPct,
           borderWidth: 1
         }]
       },
       options: {
         responsive: true,
         plugins: {
-          legend: { position: 'right' },
+          legend: { display: false },
           tooltip: { callbacks: {
-            label: (ctx) => `${ctx.label}: ${ctx.parsed}%`
+            label: (ctx) => `提升 ${ctx.parsed.y}%`
           }},
-          title: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true, max: 20, ticks: { callback: v => v + '%' } }
         }
       }
     });
