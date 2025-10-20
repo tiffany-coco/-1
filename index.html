@@ -1,899 +1,117 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>情绪训练IEP报告系统 - 四维度分析</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            --primary: #5b8fb9;
-            --secondary: #4a7ba6;
-            --accent1: #ff9e4a;
-            --accent2: #6bbf8a;
-            --accent3: #d45069;
-            --accent4: #9d5ba1;
-            --light: #f5f7fa;
-            --dark: #2c3e50;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-        }
-        
-        body {
-            background-color: var(--light);
-            color: var(--dark);
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        
-        .dashboard {
-            display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        
-        .sidebar {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-        }
-        
-        .student-list {
-            max-height: 500px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-        
-        .student-item {
-            padding: 15px;
-            margin-bottom: 10px;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-left: 4px solid var(--primary);
-        }
-        
-        .student-item:hover {
-            background-color: #e9ecef;
-            transform: translateX(5px);
-        }
-        
-        .student-item.active {
-            background-color: #e3f2fd;
-            border-left-color: var(--accent1);
-        }
-        
-        .student-name {
-            font-weight: bold;
-            font-size: 1.1rem;
-            margin-bottom: 5px;
-        }
-        
-        .student-info {
-            font-size: 0.9rem;
-            color: #666;
-        }
-        
-        .report-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-        
-        .btn-secondary {
-            background-color: #e0e0e0;
-            color: var(--dark);
-        }
-        
-        .btn-success {
-            background-color: var(--accent2);
-            color: white;
-        }
-        
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .charts-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        
-        .chart-card {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-            height: 400px;
-        }
-        
-        .chart-title {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: var(--dark);
-            text-align: center;
-        }
-        
-        .iep-report {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-        }
-        
-        .report-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .report-title {
-            font-size: 1.5rem;
-            color: var(--dark);
-        }
-        
-        .report-date {
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        .report-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-        }
-        
-        .report-section {
-            margin-bottom: 25px;
-        }
-        
-        .section-title {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .section-icon {
-            font-size: 1.5rem;
-        }
-        
-        .progress-summary {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .progress-item {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-        }
-        
-        .progress-label {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 8px;
-        }
-        
-        .progress-value {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .progress-change {
-            font-size: 0.8rem;
-            padding: 3px 8px;
-            border-radius: 12px;
-            display: inline-block;
-        }
-        
-        .positive {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-        
-        .negative {
-            background-color: #ffebee;
-            color: #c62828;
-        }
-        
-        .recommendations {
-            background: #f0f7ff;
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .recommendation-item {
-            margin-bottom: 12px;
-            padding-left: 20px;
-            position: relative;
-        }
-        
-        .recommendation-item:before {
-            content: "•";
-            position: absolute;
-            left: 0;
-            color: var(--primary);
-            font-size: 1.2rem;
-        }
-        
-        .intervention-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        
-        .intervention-table th, .intervention-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .intervention-table th {
-            background-color: #f5f7fa;
-            font-weight: 600;
-        }
-        
-        .intervention-table tr:hover {
-            background-color: #f9f9f9;
-        }
-        
-        .status-completed {
-            color: var(--accent2);
-            font-weight: bold;
-        }
-        
-        .status-in-progress {
-            color: var(--accent1);
-            font-weight: bold;
-        }
-        
-        .status-not-started {
-            color: #999;
-        }
-        
-        footer {
-            text-align: center;
-            margin-top: 50px;
-            padding: 20px;
-            color: #666;
-            font-size: 0.9rem;
-        }
-        
-        @media (max-width: 1200px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-            
-            .charts-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .report-content {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .progress-summary {
-                grid-template-columns: 1fr;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>生活语文期末测评——教师调查图表</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, "Noto Sans CJK SC", sans-serif; margin: 24px; }
+    h1 { font-size: 20px; margin: 0 0 8px; }
+    h2 { font-size: 18px; margin: 28px 0 8px; }
+    p { color: #333; margin: 6px 0 14px; }
+    .card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; margin-bottom: 22px; }
+    .row { display: grid; grid-template-columns: 1fr; gap: 22px; }
+    @media (min-width: 900px) { .row { grid-template-columns: 1fr 1fr; } }
+    .foot { color: #666; font-size: 12px; margin-top: 6px; }
+    canvas { width: 100%; height: 380px; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>情绪训练IEP报告系统</h1>
-            <p class="subtitle">四维度雷达图分析 · 情绪成长曲线 · 个性化教育计划</p>
-        </header>
-        
-        <div class="dashboard">
-            <div class="sidebar">
-                <h2 style="margin-bottom: 15px;">学生列表</h2>
-                <div class="student-list" id="studentList">
-                    <!-- 学生列表将通过JavaScript动态生成 -->
-                </div>
-                
-                <div class="report-controls">
-                    <button class="btn btn-primary" id="generateIEP">生成IEP报告</button>
-                    <button class="btn btn-secondary" id="exportPDF">导出PDF报告</button>
-                    <button class="btn btn-success" id="printReport">打印报告</button>
-                </div>
-            </div>
-            
-            <div class="main-content">
-                <div class="charts-container">
-                    <div class="chart-card">
-                        <div class="chart-title">四维度能力雷达图</div>
-                        <canvas id="radarChart"></canvas>
-                    </div>
-                    <div class="chart-card">
-                        <div class="chart-title">情绪成长曲线</div>
-                        <canvas id="growthChart"></canvas>
-                    </div>
-                </div>
-                
-                <div class="iep-report">
-                    <div class="report-header">
-                        <div>
-                            <div class="report-title" id="reportTitle">个性化教育计划报告</div>
-                            <div class="report-date" id="reportDate">报告日期: 2023年11月15日</div>
-                        </div>
-                        <div id="studentReportInfo">
-                            <!-- 学生信息将通过JavaScript动态生成 -->
-                        </div>
-                    </div>
-                    
-                    <div class="report-content">
-                        <div>
-                            <div class="report-section">
-                                <div class="section-title">
-                                    <span class="section-icon">📊</span>
-                                    <span>能力评估摘要</span>
-                                </div>
-                                <div class="progress-summary">
-                                    <div class="progress-item">
-                                        <div class="progress-label">情绪识别能力</div>
-                                        <div class="progress-value" id="recognitionValue">78%</div>
-                                        <div class="progress-change positive">+5% 较上月</div>
-                                    </div>
-                                    <div class="progress-item">
-                                        <div class="progress-label">情绪理解能力</div>
-                                        <div class="progress-value" id="understandingValue">65%</div>
-                                        <div class="progress-change positive">+8% 较上月</div>
-                                    </div>
-                                    <div class="progress-item">
-                                        <div class="progress-label">情绪调节能力</div>
-                                        <div class="progress-value" id="regulationValue">72%</div>
-                                        <div class="progress-change positive">+3% 较上月</div>
-                                    </div>
-                                    <div class="progress-item">
-                                        <div class="progress-label">情绪表达能力</div>
-                                        <div class="progress-value" id="expressionValue">60%</div>
-                                        <div class="progress-change positive">+7% 较上月</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="report-section">
-                                <div class="section-title">
-                                    <span class="section-icon">🎯</span>
-                                    <span>阶段完成情况</span>
-                                </div>
-                                <table class="intervention-table">
-                                    <thead>
-                                        <tr>
-                                            <th>训练阶段</th>
-                                            <th>完成度</th>
-                                            <th>状态</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="stageProgress">
-                                        <!-- 阶段完成情况将通过JavaScript动态生成 -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <div class="report-section">
-                                <div class="section-title">
-                                    <span class="section-icon">📈</span>
-                                    <span>干预进展分析</span>
-                                </div>
-                                <div id="interventionAnalysis">
-                                    <!-- 干预分析将通过JavaScript动态生成 -->
-                                </div>
-                            </div>
-                            
-                            <div class="report-section">
-                                <div class="section-title">
-                                    <span class="section-icon">💡</span>
-                                    <span>教育建议与策略</span>
-                                </div>
-                                <div class="recommendations">
-                                    <div class="recommendation-item" id="recognitionRecommendation">
-                                        继续加强基础情绪识别训练，特别是复杂情绪的区分
-                                    </div>
-                                    <div class="recommendation-item" id="understandingRecommendation">
-                                        增加情境理解练习，帮助建立情绪与情境的联系
-                                    </div>
-                                    <div class="recommendation-item" id="regulationRecommendation">
-                                        引入更多情绪调节策略，如深呼吸和数数法
-                                    </div>
-                                    <div class="recommendation-item" id="expressionRecommendation">
-                                        鼓励使用情绪词汇表达内心感受，提供表达模板
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <footer>
-            <p>情绪训练IEP报告系统 &copy; 2023 - 专为孤独症儿童教育设计</p>
-            <p>四维度分析 · 个性化教育计划 · 数据驱动干预</p>
-        </footer>
+  <h1>生活语文期末测评——教师调查图表</h1>
+  <p class="foot">示例数据：N=20位生活语文任课教师（可在源码中修改）。</p>
+
+  <div class="row">
+    <!-- 图1：任务类型占比对比 -->
+    <div class="card">
+      <h2>图1 现行测评占比 vs 教师期望占比（任务类型）</h2>
+      <p>横轴：任务类型；纵轴：占比（%）。对比“现行测评结构”与“教师期望结构”。</p>
+      <canvas id="barChart" aria-label="任务类型占比对比图" role="img"></canvas>
+      <div class="foot">现行占比（示例）：识记60｜理解20｜应用15｜综合5；期望占比（示例）：识记30｜理解25｜应用30｜综合15。</div>
     </div>
 
-    <script>
-        // 模拟学生数据
-        const students = [
-            {
-                id: 1,
-                name: "小明",
-                age: 8,
-                class: "三年级二班",
-                joinDate: "2023-01-15",
-                recognition: 78,
-                understanding: 65,
-                regulation: 72,
-                expression: 60,
-                // 雷达图数据 - 四个维度的详细子维度
-                radarData: {
-                    recognition: [85, 70, 65, 90], // 基础识别、复杂识别、强度识别、表情识别
-                    understanding: [75, 60, 55, 70], // 情境匹配、原因推测、后果预测、共情理解
-                    regulation: [70, 65, 60, 90], // 自我调节、表达控制、应对策略、情绪恢复
-                    expression: [65, 55, 50, 70] // 词汇使用、非语言表达、需求表达、适当表达
-                },
-                // 成长曲线数据 - 干预天数与阶段完成度
-                growthData: {
-                    days: [0, 7, 14, 21, 28, 35, 42, 49, 56, 63],
-                    completion: [0, 15, 25, 40, 50, 60, 70, 78, 82, 85],
-                    stages: [90, 75, 60, 40] // 四个阶段的完成度
-                },
-                // 阶段完成情况
-                stageProgress: [
-                    { name: "基础感知与识别", completion: 90, status: "completed" },
-                    { name: "情境理解与应用", completion: 75, status: "in-progress" },
-                    { name: "社会认知与调节", completion: 60, status: "not-started" },
-                    { name: "综合应用与泛化", completion: 40, status: "not-started" }
-                ],
-                // 干预分析
-                interventionAnalysis: "学生在情绪识别方面表现良好，特别是在基础情绪识别方面已达到85%的准确率。情绪理解能力正在稳步提升，但在复杂情境下的情绪原因推测仍需加强。情绪调节能力中等，需要更多实际情境的练习。情绪表达能力是当前的主要挑战，需要针对性训练。"
-            },
-            {
-                id: 2,
-                name: "小红",
-                age: 9,
-                class: "四年级一班",
-                joinDate: "2022-11-20",
-                recognition: 85,
-                understanding: 70,
-                regulation: 65,
-                expression: 75,
-                radarData: {
-                    recognition: [90, 80, 75, 95],
-                    understanding: [80, 70, 65, 75],
-                    regulation: [70, 60, 55, 75],
-                    expression: [80, 70, 65, 85]
-                },
-                growthData: {
-                    days: [0, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77],
-                    completion: [0, 20, 35, 45, 55, 65, 70, 75, 78, 80, 82, 85],
-                    stages: [95, 80, 70, 60]
-                },
-                stageProgress: [
-                    { name: "基础感知与识别", completion: 95, status: "completed" },
-                    { name: "情境理解与应用", completion: 80, status: "completed" },
-                    { name: "社会认知与调节", completion: 70, status: "in-progress" },
-                    { name: "综合应用与泛化", completion: 60, status: "not-started" }
-                ],
-                interventionAnalysis: "学生整体表现良好，情绪识别和理解能力较强。情绪调节能力中等，需要加强应对策略的训练。情绪表达能力较好，但在非语言表达方面仍有提升空间。建议继续推进社会认知阶段的训练，并开始引入综合应用练习。"
-            },
-            {
-                id: 3,
-                name: "小华",
-                age: 7,
-                class: "二年级三班",
-                joinDate: "2023-03-10",
-                recognition: 65,
-                understanding: 55,
-                regulation: 60,
-                expression: 50,
-                radarData: {
-                    recognition: [70, 55, 50, 75],
-                    understanding: [60, 50, 45, 65],
-                    regulation: [65, 55, 50, 70],
-                    expression: [55, 45, 40, 60]
-                },
-                growthData: {
-                    days: [0, 7, 14, 21, 28, 35, 42],
-                    completion: [0, 10, 20, 30, 40, 50, 65],
-                    stages: [70, 60, 45, 30]
-                },
-                stageProgress: [
-                    { name: "基础感知与识别", completion: 70, status: "in-progress" },
-                    { name: "情境理解与应用", completion: 60, status: "not-started" },
-                    { name: "社会认知与调节", completion: 45, status: "not-started" },
-                    { name: "综合应用与泛化", completion: 30, status: "not-started" }
-                ],
-                interventionAnalysis: "学生处于训练初期，基础情绪识别能力正在建立中。需要加强基础训练，特别是情绪强度的识别。情绪理解和表达能力较弱，需要更多的引导和示范。建议放缓训练进度，确保基础能力的牢固掌握。"
-            }
-        ];
+    <!-- 图2：教师感知（是否能反映生活语言应用能力） -->
+    <div class="card">
+      <h2>图2 现有测评能否反映“生活语言应用能力”（教师感知）</h2>
+      <p>5级选项：非常能 / 比较能 / 一般 / 较弱 / 完全不能。</p>
+      <canvas id="pieChart" aria-label="教师感知饼图" role="img"></canvas>
+      <div class="foot">示例分布：非常能5%｜比较能20%｜一般10%｜较弱40%｜完全不能25%。</div>
+    </div>
+  </div>
 
-        // 当前选中的学生
-        let currentStudent = students[0];
-        
-        // 图表实例
-        let radarChartInstance = null;
-        let growthChartInstance = null;
+  <script>
+    // ====== 可编辑数据（直接改数值即可） ======
+    // 图1：任务类型占比（百分比）
+    const labelsTypes = ['识记类', '理解类', '应用类（情境）', '综合类（跨情境）'];
+    const currentRatio = [60, 20, 15, 5];   // 现行测评占比
+    const expectedRatio = [30, 25, 30, 15]; // 教师期望占比
 
-        // 初始化学生列表
-        function initStudentList() {
-            const studentList = document.getElementById('studentList');
-            studentList.innerHTML = '';
-            
-            students.forEach(student => {
-                const studentItem = document.createElement('div');
-                studentItem.className = `student-item ${student.id === currentStudent.id ? 'active' : ''}`;
-                studentItem.innerHTML = `
-                    <div class="student-name">${student.name}</div>
-                    <div class="student-info">${student.age}岁 | ${student.class}</div>
-                    <div class="student-info">加入时间: ${student.joinDate}</div>
-                `;
-                
-                studentItem.addEventListener('click', () => {
-                    // 移除所有active类
-                    document.querySelectorAll('.student-item').forEach(item => {
-                        item.classList.remove('active');
-                    });
-                    
-                    // 添加active类到当前项
-                    studentItem.classList.add('active');
-                    
-                    // 更新当前学生
-                    currentStudent = student;
-                    
-                    // 更新报告
-                    updateReport();
-                });
-                
-                studentList.appendChild(studentItem);
-            });
+    // 图2：教师感知（百分比，总和100）
+    const perceptionLabels = ['非常能', '比较能', '一般', '较弱', '完全不能'];
+    const perceptionData = [5, 20, 10, 40, 25];
+
+    // ====== 图1：柱状对比图 ======
+    const barCtx = document.getElementById('barChart');
+    new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: labelsTypes,
+        datasets: [
+          {
+            label: '现行测评占比',
+            data: currentRatio,
+            borderWidth: 1
+          },
+          {
+            label: '教师期望占比',
+            data: expectedRatio,
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'top' },
+          tooltip: { callbacks: {
+            label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y}%`
+          }},
+          title: { display: false }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: { callback: (v) => v + '%' }
+          }
         }
+      }
+    });
 
-        // 更新报告内容
-        function updateReport() {
-            // 更新报告标题和学生信息
-            document.getElementById('reportTitle').textContent = `${currentStudent.name}的个性化教育计划报告`;
-            document.getElementById('studentReportInfo').innerHTML = `
-                <div style="text-align: right;">
-                    <div style="font-weight: bold;">${currentStudent.name}</div>
-                    <div>${currentStudent.age}岁 | ${currentStudent.class}</div>
-                </div>
-            `;
-            
-            // 更新能力评估摘要
-            document.getElementById('recognitionValue').textContent = `${currentStudent.recognition}%`;
-            document.getElementById('understandingValue').textContent = `${currentStudent.understanding}%`;
-            document.getElementById('regulationValue').textContent = `${currentStudent.regulation}%`;
-            document.getElementById('expressionValue').textContent = `${currentStudent.expression}%`;
-            
-            // 更新阶段完成情况
-            const stageProgress = document.getElementById('stageProgress');
-            stageProgress.innerHTML = '';
-            
-            currentStudent.stageProgress.forEach(stage => {
-                const statusClass = `status-${stage.status}`;
-                const statusText = 
-                    stage.status === 'completed' ? '已完成' :
-                    stage.status === 'in-progress' ? '进行中' : '未开始';
-                
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${stage.name}</td>
-                    <td>${stage.completion}%</td>
-                    <td class="${statusClass}">${statusText}</td>
-                `;
-                stageProgress.appendChild(row);
-            });
-            
-            // 更新干预分析
-            document.getElementById('interventionAnalysis').innerHTML = `
-                <p>${currentStudent.interventionAnalysis}</p>
-            `;
-            
-            // 更新教育建议
-            updateRecommendations();
-            
-            // 更新图表
-            updateCharts();
+    // ====== 图2：饼图 ======
+    const pieCtx = document.getElementById('pieChart');
+    new Chart(pieCtx, {
+      type: 'pie',
+      data: {
+        labels: perceptionLabels,
+        datasets: [{
+          data: perceptionData,
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'right' },
+          tooltip: { callbacks: {
+            label: (ctx) => `${ctx.label}: ${ctx.parsed}%`
+          }},
+          title: { display: false }
         }
-
-        // 更新教育建议
-        function updateRecommendations() {
-            // 根据学生能力水平提供个性化建议
-            if (currentStudent.recognition < 70) {
-                document.getElementById('recognitionRecommendation').textContent = 
-                    "加强基础情绪识别训练，从简单表情开始，逐步增加复杂情绪。";
-            } else if (currentStudent.recognition < 85) {
-                document.getElementById('recognitionRecommendation').textContent = 
-                    "继续加强基础情绪识别训练，特别是复杂情绪的区分。";
-            } else {
-                document.getElementById('recognitionRecommendation').textContent = 
-                    "情绪识别能力良好，可以开始进行更复杂的微表情识别训练。";
-            }
-            
-            if (currentStudent.understanding < 60) {
-                document.getElementById('understandingRecommendation').textContent = 
-                    "增加简单情境的情绪理解练习，建立基本的情境-情绪联系。";
-            } else if (currentStudent.understanding < 75) {
-                document.getElementById('understandingRecommendation').textContent = 
-                    "增加情境理解练习，帮助建立情绪与情境的联系。";
-            } else {
-                document.getElementById('understandingRecommendation').textContent = 
-                    "情绪理解能力良好，可以开始进行复杂社会情境的情绪分析。";
-            }
-            
-            if (currentStudent.regulation < 65) {
-                document.getElementById('regulationRecommendation').textContent = 
-                    "引入简单情绪调节策略，如深呼吸和短暂休息。";
-            } else if (currentStudent.regulation < 80) {
-                document.getElementById('regulationRecommendation').textContent = 
-                    "引入更多情绪调节策略，如深呼吸和数数法。";
-            } else {
-                document.getElementById('regulationRecommendation').textContent = 
-                    "情绪调节能力良好，可以学习更高级的认知重评策略。";
-            }
-            
-            if (currentStudent.expression < 55) {
-                document.getElementById('expressionRecommendation').textContent = 
-                    "鼓励使用基本情绪词汇表达感受，提供表达模板和视觉支持。";
-            } else if (currentStudent.expression < 70) {
-                document.getElementById('expressionRecommendation').textContent = 
-                    "鼓励使用情绪词汇表达内心感受，提供表达模板。";
-            } else {
-                document.getElementById('expressionRecommendation').textContent = 
-                    "情绪表达能力良好，可以练习更细腻的情绪描述和表达。";
-            }
-        }
-
-        // 更新图表
-        function updateCharts() {
-            // 更新雷达图
-            updateRadarChart();
-            
-            // 更新成长曲线
-            updateGrowthChart();
-        }
-
-        // 更新雷达图
-        function updateRadarChart() {
-            const radarCtx = document.getElementById('radarChart').getContext('2d');
-            
-            // 如果已存在图表实例，则销毁它
-            if (radarChartInstance) {
-                radarChartInstance.destroy();
-            }
-            
-            radarChartInstance = new Chart(radarCtx, {
-                type: 'radar',
-                data: {
-                    labels: ['基础识别', '复杂识别', '强度识别', '表情识别'],
-                    datasets: [
-                        {
-                            label: '识别维度',
-                            data: currentStudent.radarData.recognition,
-                            backgroundColor: 'rgba(255, 158, 74, 0.2)',
-                            borderColor: 'rgb(255, 158, 74)',
-                            pointBackgroundColor: 'rgb(255, 158, 74)',
-                            pointBorderColor: '#fff',
-                            pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgb(255, 158, 74)'
-                        },
-                        {
-                            label: '理解维度',
-                            data: currentStudent.radarData.understanding,
-                            backgroundColor: 'rgba(107, 191, 138, 0.2)',
-                            borderColor: 'rgb(107, 191, 138)',
-                            pointBackgroundColor: 'rgb(107, 191, 138)',
-                            pointBorderColor: '#fff',
-                            pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgb(107, 191, 138)'
-                        },
-                        {
-                            label: '调节维度',
-                            data: currentStudent.radarData.regulation,
-                            backgroundColor: 'rgba(212, 80, 105, 0.2)',
-                            borderColor: 'rgb(212, 80, 105)',
-                            pointBackgroundColor: 'rgb(212, 80, 105)',
-                            pointBorderColor: '#fff',
-                            pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgb(212, 80, 105)'
-                        },
-                        {
-                            label: '表达维度',
-                            data: currentStudent.radarData.expression,
-                            backgroundColor: 'rgba(157, 91, 161, 0.2)',
-                            borderColor: 'rgb(157, 91, 161)',
-                            pointBackgroundColor: 'rgb(157, 91, 161)',
-                            pointBorderColor: '#fff',
-                            pointHoverBackgroundColor: '#fff',
-                            pointHoverBorderColor: 'rgb(157, 91, 161)'
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        r: {
-                            angleLines: {
-                                display: true
-                            },
-                            suggestedMin: 0,
-                            suggestedMax: 100,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // 更新成长曲线
-        function updateGrowthChart() {
-            const growthCtx = document.getElementById('growthChart').getContext('2d');
-            
-            // 如果已存在图表实例，则销毁它
-            if (growthChartInstance) {
-                growthChartInstance.destroy();
-            }
-            
-            growthChartInstance = new Chart(growthCtx, {
-                type: 'line',
-                data: {
-                    labels: currentStudent.growthData.days.map(day => `第${day}天`),
-                    datasets: [
-                        {
-                            label: '阶段完成度',
-                            data: currentStudent.growthData.completion,
-                            borderColor: '#5b8fb9',
-                            backgroundColor: 'rgba(91, 143, 185, 0.1)',
-                            tension: 0.3,
-                            fill: true
-                        },
-                        {
-                            label: '识别能力',
-                            data: currentStudent.growthData.completion.map(val => val * 0.9),
-                            borderColor: '#ff9e4a',
-                            borderDash: [5, 5],
-                            backgroundColor: 'transparent',
-                            tension: 0.3
-                        },
-                        {
-                            label: '理解能力',
-                            data: currentStudent.growthData.completion.map(val => val * 0.7),
-                            borderColor: '#6bbf8a',
-                            borderDash: [5, 5],
-                            backgroundColor: 'transparent',
-                            tension: 0.3
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        title: {
-                            display: false
-                        },
-                        legend: {
-                            position: 'top',
-                        }
-                    },
-                    scales: {
-                        y: {
-                            min: 0,
-                            max: 100,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // 初始化
-        function init() {
-            initStudentList();
-            updateReport();
-            
-            // 添加按钮事件
-            document.getElementById('generateIEP').addEventListener('click', function() {
-                alert(`正在为 ${currentStudent.name} 生成个性化教育计划...\n计划将基于四个维度的评估结果制定针对性训练方案。`);
-            });
-            
-            document.getElementById('exportPDF').addEventListener('click', function() {
-                alert(`正在导出 ${currentStudent.name} 的PDF报告...\n报告将包含四维度分析和成长曲线图表。`);
-            });
-            
-            document.getElementById('printReport').addEventListener('click', function() {
-                window.print();
-            });
-        }
-
-        // 页面加载完成后初始化
-        window.addEventListener('DOMContentLoaded', init);
-    </script>
+      }
+    });
+  </script>
 </body>
 </html>
